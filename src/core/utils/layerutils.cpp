@@ -18,6 +18,7 @@
 
 #include <QQmlEngine>
 #include <QScopeGuard>
+#include <QSettings>
 #include <qgsfillsymbol.h>
 #include <qgsfillsymbollayer.h>
 #include <qgshuesaturationfilter.h>
@@ -290,6 +291,14 @@ QgsRasterLayer *LayerUtils::createOnlineElevationLayer()
 
 QgsMapLayer *LayerUtils::createBasemap( const QString &style )
 {
+  QSettings settings;
+  const QString customUrl = settings.value( QStringLiteral( "QField/customBasemapUrl" ), QString() ).toString();
+  if ( !customUrl.isEmpty() )
+  {
+    const QString encodedUrl = QStringLiteral( "type=xyz&tilePixelRatio=1&url=%1&zmax=19&zmin=0&crs=EPSG3857" ).arg( customUrl );
+    return new QgsRasterLayer( encodedUrl, QStringLiteral( "Custom Basemap" ), QLatin1String( "wms" ) );
+  }
+
   QgsRasterLayer *layer = nullptr;
   if ( style.compare( QStringLiteral( "lightgray" ) ) == 0 )
   {

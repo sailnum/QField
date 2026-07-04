@@ -44,6 +44,7 @@ Page {
   property string proxyUser: ""
   property string proxyPassword: ""
   property string proxyExcludedUrls: ""
+  property string customBasemapUrl: ""
 
   // Guard to avoid writing back to QSettings during the initial load from QSettings.
   property bool proxySettingsLoaded: false
@@ -83,6 +84,11 @@ Page {
       settings.setValue('proxy/proxy-excluded-urls', proxyExcludedUrls);
     }
   }
+  onCustomBasemapUrlChanged: {
+    if (proxySettingsLoaded) {
+      settings.setValue('QField/customBasemapUrl', customBasemapUrl);
+    }
+  }
 
   leftPadding: mainWindow.sceneLeftMargin
   rightPadding: mainWindow.sceneRightMargin
@@ -105,6 +111,7 @@ Page {
     proxyExcludedUrls = Array.isArray(excludedRaw) ? excludedRaw.join(', ') : (excludedRaw || '');
     const typeIdx = proxyTypeComboBox.indexOfValue(proxyType);
     proxyTypeComboBox.currentIndex = typeIdx >= 0 ? typeIdx : 0;
+    customBasemapUrl = settings.value('QField/customBasemapUrl', '');
     proxySettingsLoaded = true;
 
     authenticationConfigurationsListView.model = AuthUtils.authenticationConfigurationDetails();
@@ -1124,6 +1131,54 @@ Page {
 
               Label {
                 text: qsTr("Configure a network proxy to route QField's traffic through a proxy server. Useful for corporate networks and VPNs.")
+                font: Theme.tipFont
+                color: Theme.secondaryTextColor
+                wrapMode: Text.WordWrap
+                Layout.fillWidth: true
+                Layout.columnSpan: 2
+              }
+            }
+
+            GridLayout {
+              Layout.fillWidth: true
+              Layout.leftMargin: 20
+              Layout.rightMargin: 20
+
+              columns: 2
+              columnSpacing: 0
+              rowSpacing: 5
+
+              Label {
+                text: qsTr('Basemap')
+                font: Theme.strongFont
+                color: Theme.mainTextColor
+                wrapMode: Text.WordWrap
+                Layout.fillWidth: true
+                Layout.topMargin: 5
+                Layout.columnSpan: 2
+              }
+
+              Label {
+                text: qsTr("Custom basemap URL")
+                font: Theme.defaultFont
+                color: Theme.mainTextColor
+                wrapMode: Text.WordWrap
+                Layout.fillWidth: true
+                Layout.leftMargin: 8
+              }
+
+              QfTextField {
+                id: customBasemapField
+                font: Theme.defaultFont
+                Layout.fillWidth: true
+                placeholderText: qsTr("e.g. https://tile.server.com/{z}/{x}/{y}.png")
+                inputMethodHints: Qt.ImhUrlCharactersOnly
+                text: customBasemapUrl
+                onTextChanged: customBasemapUrl = text
+              }
+
+              Label {
+                text: qsTr("Leave empty to use the default Tianditu basemap.")
                 font: Theme.tipFont
                 color: Theme.secondaryTextColor
                 wrapMode: Text.WordWrap
